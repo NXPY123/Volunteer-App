@@ -1,7 +1,17 @@
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, Text, View, Image, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { TouchableOpacity } from 'react-native-web';
+import { getDocs,collection,doc,setDoc } from "firebase/firestore";
+import { addNewDoc,getPage,sign_out,query_db,new_task_details_html,org_profile_html,user_profile_html,users_collection,organisations_collection,auth,provider,top_level_url,index_html,loading_html,temp_html,new_user_details_html,new_organisation_details_html,environment,isNewUser,userType_html,createFile,uploadFile,downloadFile,tasks_collection,user_feed_html,task_images_storage_path,view_task_html,get_param_value,loadTasks,goToTask,volunteers_collection } from "./methods.js";
+import { firebase,db,storage} from "./config.js";
+
+
+let isVolunteered = false;
+let isUser = false;
+
+
 
 export const TaskDescription = ({ route }) => {
    const data = route.params;
@@ -11,6 +21,56 @@ export const TaskDescription = ({ route }) => {
       "Animal": require("./assets/images/user.png"),
       "Education": require("./assets/images/education.png"),
    }
+   let org_address = "";
+   let org_website = "";
+   let org_phone = "";
+   let org_description = "";
+   let org_email = "";
+
+   auth.onAuthStateChanged(async function(user) {
+      if (user) {
+          // currentUser should be available now
+          const user_query =  await query_db("Email", "==", user.email,users_collection);
+          if(user_query.empty){
+              //alert("You are not a user. Please login with a user account");
+              //window.location = top_level_url + index_html;
+              isUser = false;
+          }
+  
+          
+          else{
+              isUser = true;
+              const org_info = await query_db("Name", "==", data.data.organisation,organisations_collection);
+               org_info.forEach((doc) => {
+                  org_address = doc.data().Address;
+                  org_website = doc.data().Website;
+                  org_phone = doc.data().Phone;
+                  org_description = doc.data()["About Us"];
+                  org_email = doc.data().Email;
+
+               });
+
+              const volunteers_query = await query_db("Email", "==", user.email,volunteers_collection);
+              for(const doc of volunteers_query.docs){
+                  if(doc.data().TaskID == data.data.id){ //check if user has already submitted for volunteering
+                      isVolunteered = true;
+                  }
+              }
+          
+          }
+          
+      }
+      else{
+          console.log("could not load user info from google");
+          // No user logged in.
+      }
+  });
+
+  
+  
+
+
+
    console.log(data);
    return (
       <View style={styles.container}>
@@ -35,7 +95,7 @@ export const TaskDescription = ({ route }) => {
             </View>
             <View style={styles.logoContainer}>
                <Icon name="male" size={17} color="#FF6B6B" />
-               <Text style={styles.logoText}>10 Volunteers</Text>
+               <Text style={styles.logoText}>{`${data.data.currVolunteers} Volunteers`}</Text>
             </View>
          </View>
          <View style={styles.descriptionContainer}>
@@ -45,29 +105,94 @@ export const TaskDescription = ({ route }) => {
          <View style={styles.descriptionContainer}>
             <Text style={styles.subtitle}>Organisation Description</Text>
             {/* placeholder */}
-            <Text style={styles.description}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor. </Text>
+            <Text style={styles.description}>{org_description}</Text>
          </View>
          <View style={styles.tagContainer}>
             <View style={styles.logoContainer}>
                <Icon name="phone" size={15} color="#FF6B6B" />
-               <Text style={styles.logoText}>9999888811</Text>
+               <Text style={styles.logoText}>{org_phone}</Text>
             </View>
             <View style={styles.logoContainer}>
                <Icon name="envelope" size={15} color="#FF6B6B" />
-               <Text style={styles.logoText}>abc@gmail.com</Text>
+               <Text style={styles.logoText}>{org_email}</Text>
             </View>
             <View style={styles.logoContainer}>
                <Icon name="search" size={15} color="#FF6B6B" />
-               <Text style={styles.logoText}>abc.org</Text>
+               <Text style={styles.logoText}>{org_website}</Text>
             </View>
          </View>
-         <View style={styles.volunteerButton}>
+         <TouchableOpacity style={styles.volunteerButton} onPress={async () =>{ 
+
+         try{
+           
+            const task_query = await query_db("TaskID", "==", data.data.taskID,tasks_collection);
+            if(task_query.empty){
+               console.log(task_id);
+               Alert.alert("No task found with that id");
+              
+            }
+            let task_data = {};
+            task_query.forEach((doc) => {
+               // doc.data() is never undefined for query doc snapshots
+            
+               task_data[doc.id] = doc.data();
+               // for(const key in doc.data()){
+
+               //     task_data[key] = doc.data()[key]; 
+                  
+               //     //console.log(`${key}: ${doc.data()[key]}`);
+               // }
+            //console.log(doc.data());
+            });
+            const db_collection = volunteers_collection;
+            //const email = user_data["Email"];
+            const user_query =  await query_db("Email", "==", email,users_collection);
+            if(user_query.empty){
+               Alert.alert("You are not a user. Please login with a user account");
+              
+            }
+            let user_data = {};
+            user_query.forEach((doc) => {
+               // doc.data() is never undefined for query doc snapshots
+               for(const key in doc.data()){
+                  user_data[key] = doc.data()[key];
+               }
+            });
+            
+            //const task_name = task_data["Name"];
+         
+            const task_name = task_data[Object.keys(task_data)[0]]["Name"];
+            const task_id = task_data[Object.keys(task_data)[0]]["TaskID"];
+            const org_id = task_data[Object.keys(task_data)[0]]["OrgID"];
+
+            const db_doc = {
+               "Email" : email,
+               "Task Name": task_name,
+               "TaskID": task_id,
+               "OrgID": org_id,
+               "Status": "Pending"
+            }
+         
+            if(!isVolunteered){
+               await addNewDoc(db_collection,db_doc);
+               console.log("New Volunteer Details Added");
+            }
+            else{
+               Alert.alert("You have already volunteered for this task");
+            }
+
+         }
+         catch(err){
+            console.log(err);
+         }
+         }} >
                <Text style={styles.volunteerText}>Volunteer</Text>
-            </View>
+            </TouchableOpacity>
          <StatusBar style="auto" />
       </View>
    )
 }
+
 
 const styles = StyleSheet.create({
    container: {

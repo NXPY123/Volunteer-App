@@ -15,6 +15,9 @@ let tasks = [
     type: "Environmental",
     location: "Onsite - Delhi",
     picture: "./assets/images/environment.jpg",
+    date: "2021-05-01",
+    currVolunteers: 2,
+    taskID: "1",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor."
   },
   {
@@ -23,6 +26,9 @@ let tasks = [
     type: "Education",
     location: "Remote",
     picture: "./assets/images/education.png",
+    date: "2021-05-01",
+    currVolunteers: 2,
+    taskID: "2",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor."
   },
   {
@@ -31,6 +37,9 @@ let tasks = [
     type: "Community",
     location: "Onsite - Delhi",
     picture: "./assets/images/community.png",
+    date: "2021-05-01",
+    currVolunteers: 2,
+    taskID: "3",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor."
   },
   {
@@ -39,6 +48,9 @@ let tasks = [
     type: "Environmental",
     location: "Onsite - Delhi",
     picture: "./assets/images/environmental.png",
+    date: "2021-05-01",
+    currVolunteers: 2,
+    taskID: "4",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor."
   },
   {
@@ -47,6 +59,9 @@ let tasks = [
     type: "Education",
     location: "Remote",
     picture: "./assets/images/education.png",
+    date: "2021-05-01",
+    currVolunteers: 2,
+    taskID: "5",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor."
   },
   {
@@ -55,6 +70,9 @@ let tasks = [
     type: "Animal",
     location: "Onsite - Delhi",
     picture: "./assets/images/animal.png",
+    date: "2021-05-01",
+    currVolunteers: 2,
+    taskID: "6",
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sed elementum velit, eu lobortis eros. Suspendisse vehicula imperdiet nunc, sed tincidunt mi venenatis vel. Suspendisse at lectus vel ligula lobortis porttitor."
   }
 ]
@@ -164,7 +182,7 @@ export const VolunteerFeed =  () => {
         
         {tasks.map((task, index) => {
           return (
-            <FeedCard key={tasks.indexOf(task)} name={task.name} organisation ={task.organisation} type={task.type} location={task.location} picture={task.picture} description={task.description}/>
+            <FeedCard key={tasks.indexOf(task)} name={task.name} organisation ={task.organisation} type={task.type} location={task.location} picture={task.picture} description={task.description} date={task.date} currVolunteers={task.currVolunteers} taskID={task.taskID} /> //date={task.date}
           )
         })}
       </ScrollView>
